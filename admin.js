@@ -1,45 +1,43 @@
 const defaults = {
+
   profile: {
     name: "Mi perfil personal",
-    headline: "Tecnologia, analisis y fotografia desde celular",
-    location: "Peru",
+    headline: "Tecnología, análisis y fotografía",
+    location: "Perú",
     avatar_url: "",
     about:
-      "Soy una persona proactiva, responsable y comprometida con mi crecimiento personal y profesional. Me caracteriza una mentalidad de aprendizaje constante, buscando siempre adquirir nuevos conocimientos y desarrollar habilidades para enfrentar retos en el ambito tecnologico y creativo.",
+      "Soy una persona comprometida con el aprendizaje continuo y el crecimiento profesional.",
     focus:
-      "Mi objetivo es seguir creciendo profesionalmente, integrando tecnologia, analisis y creatividad para desarrollar proyectos funcionales, modernos y con impacto positivo."
+      "Integrar tecnología, análisis y creatividad para desarrollar soluciones modernas."
   },
-  highlights: [
-    {
-      id: 1,
-      title: "Desarrollo de sistemas",
-      description:
-        "Formacion en Desarrollo de Sistemas de Informacion, con capacidades en tecnologia, organizacion, analisis y resolucion de problemas.",
-      sort_order: 1
-    },
-    {
-      id: 2,
-      title: "Fotografia y video",
-      description:
-        "Me apasiona capturar momentos, crear contenido visual y transmitir ideas mediante recursos audiovisuales usando principalmente mi celular.",
-      sort_order: 2
-    },
-    {
-      id: 3,
-      title: "Investigacion operativa",
-      description:
-        "Estudio Investigacion Operativa para fortalecer mi pensamiento analitico, la toma de decisiones y el uso de modelos de optimizacion.",
-      sort_order: 3
-    }
-  ],
-  photos: []
+
+  highlights: [],
+
+  photos: [],
+
+  experience: [],
+
+  projects: [],
+
+  social_links: []
+
 };
 
 let supabaseClient = null;
 let state = {
+
   profile: { ...defaults.profile },
+
   highlights: [],
-  photos: []
+
+  photos: [],
+
+  experience: [],
+
+  projects: [],
+
+  social_links: []
+
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -89,10 +87,44 @@ async function loadState() {
 
   if (!supabaseClient) {
     state = {
-      profile: localGet("profile", defaults.profile),
-      highlights: localGet("highlights", defaults.highlights),
-      photos: localGet("photos", defaults.photos)
-    };
+
+  profile:
+    localGet(
+      "profile",
+      defaults.profile
+    ),
+
+  highlights:
+    localGet(
+      "highlights",
+      defaults.highlights
+    ),
+
+  photos:
+    localGet(
+      "photos",
+      defaults.photos
+    ),
+
+  experience:
+    localGet(
+      "experience",
+      defaults.experience
+    ),
+
+  projects:
+    localGet(
+      "projects",
+      defaults.projects
+    ),
+
+  social_links:
+    localGet(
+      "social_links",
+      defaults.social_links
+    )
+
+};
     renderAll();
     return;
   }
@@ -106,25 +138,105 @@ async function loadState() {
     return;
   }
 
-  const [{ data: profile }, { data: highlights }, { data: photos }] = await Promise.all([
-    supabaseClient.from("profile").select("*").eq("id", 1).single(),
-    supabaseClient.from("highlights").select("*").order("sort_order", { ascending: true }),
-    supabaseClient.from("photos").select("*").order("sort_order", { ascending: true })
-  ]);
+  const [
 
-  state = {
-    profile: profile || defaults.profile,
-    highlights: highlights?.length ? highlights : defaults.highlights,
-    photos: photos || []
-  };
+  { data: profile },
+
+  { data: highlights },
+
+  { data: photos },
+
+  { data: experience },
+
+  { data: projects },
+
+  { data: socialLinks }
+
+] = await Promise.all([
+
+  supabaseClient
+    .from("profile")
+    .select("*")
+    .eq("id", 1)
+    .single(),
+
+  supabaseClient
+    .from("highlights")
+    .select("*")
+    .order("sort_order", {
+      ascending: true
+    }),
+
+  supabaseClient
+    .from("photos")
+    .select("*")
+    .order("sort_order", {
+      ascending: true
+    }),
+
+  supabaseClient
+    .from("experience")
+    .select("*")
+    .order("sort_order", {
+      ascending: true
+    }),
+
+  supabaseClient
+    .from("projects")
+    .select("*")
+    .order("sort_order", {
+      ascending: true
+    }),
+
+  supabaseClient
+    .from("social_links")
+    .select("*")
+    .order("sort_order", {
+      ascending: true
+    })
+
+]);
+  
+state = {
+
+  profile:
+    profile || defaults.profile,
+
+  highlights:
+    highlights || [],
+
+  photos:
+    photos || [],
+
+  experience:
+    experience || [],
+
+  projects:
+    projects || [],
+
+  social_links:
+    socialLinks || []
+
+};
   renderAll();
 }
 
 function renderAll() {
+
   hideForms();
+
   renderProfile();
+
   renderHighlights();
+
   renderPhotos();
+
+  renderExperience();
+
+  renderProjects();
+
+  renderSocialLinks();
+
 }
 
 function hideForms() {
@@ -206,6 +318,218 @@ function renderPhotos() {
       `;
       list.append(row);
     });
+}
+
+function renderExperience() {
+
+  const list = $("#experience-list");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!state.experience.length) {
+
+    list.innerHTML = `
+      <div class="empty-state">
+        No hay experiencia registrada.
+      </div>
+    `;
+
+    return;
+  }
+
+  state.experience
+    .sort((a, b) =>
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    )
+    .forEach((item) => {
+
+      const card =
+        document.createElement("article");
+
+      card.className =
+        "content-card";
+
+      card.innerHTML = `
+
+        <div class="card-kicker">
+          ${escapeHTML(item.period || "")}
+        </div>
+
+        <h3>
+          ${escapeHTML(item.title)}
+        </h3>
+
+        <strong>
+          ${escapeHTML(item.company || "")}
+        </strong>
+
+        <p>
+          ${escapeHTML(item.description || "")}
+        </p>
+
+        <div class="manager-actions">
+
+          <button
+            class="small-button"
+            data-edit-experience="${item.id}">
+            Editar
+          </button>
+
+          <button
+            class="small-button delete"
+            data-delete-experience="${item.id}">
+            Eliminar
+          </button>
+
+        </div>
+
+      `;
+
+      list.append(card);
+
+    });
+
+}
+
+function renderProjects() {
+
+  const list =
+    $("#projects-list");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!state.projects.length) {
+
+    list.innerHTML = `
+      <div class="empty-state">
+        No hay proyectos publicados.
+      </div>
+    `;
+
+    return;
+  }
+
+  state.projects
+    .sort((a, b) =>
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    )
+    .forEach((project) => {
+
+      const card =
+        document.createElement("article");
+
+      card.className =
+        "content-card";
+
+      card.innerHTML = `
+
+        <h3>
+          ${escapeHTML(project.title)}
+        </h3>
+
+        <p>
+          ${escapeHTML(project.description)}
+        </p>
+
+        <div class="manager-actions">
+
+          <button
+            class="small-button"
+            data-edit-project="${project.id}">
+            Editar
+          </button>
+
+          <button
+            class="small-button delete"
+            data-delete-project="${project.id}">
+            Eliminar
+          </button>
+
+        </div>
+
+      `;
+
+      list.append(card);
+
+    });
+
+}
+
+function renderSocialLinks() {
+
+  const list =
+    $("#social-list");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!state.social_links.length) {
+
+    list.innerHTML = `
+      <div class="empty-state">
+        No hay redes registradas.
+      </div>
+    `;
+
+    return;
+  }
+
+  state.social_links
+    .sort((a, b) =>
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    )
+    .forEach((social) => {
+
+      const card =
+        document.createElement("article");
+
+      card.className =
+        "content-card";
+
+      card.innerHTML = `
+
+        <h3>
+          ${escapeHTML(
+            social.platform
+          )}
+        </h3>
+
+        <p>
+          ${escapeHTML(
+            social.url
+          )}
+        </p>
+
+        <div class="manager-actions">
+
+          <button
+            class="small-button"
+            data-edit-social="${social.id}">
+            Editar
+          </button>
+
+          <button
+            class="small-button delete"
+            data-delete-social="${social.id}">
+            Eliminar
+          </button>
+
+        </div>
+
+      `;
+
+      list.append(card);
+
+    });
+
 }
 
 function renderPreview(selector, imageUrl) {
@@ -358,7 +682,215 @@ async function savePhoto(item) {
   if (error) throw error;
   await loadState();
 }
+async function saveExperience(item) {
 
+  if (!supabaseClient) {
+
+    const id =
+      item.id
+        ? Number(item.id)
+        : nextId(state.experience);
+
+    const saved = {
+      ...item,
+      id
+    };
+
+    state.experience =
+      state.experience
+        .filter(
+          x =>
+            Number(x.id) !== id
+        )
+        .concat(saved);
+
+    localSet(
+      "experience",
+      state.experience
+    );
+
+    renderAll();
+
+    return;
+  }
+
+  const payload = {
+    ...item,
+    sort_order:
+      Number(
+        item.sort_order || 0
+      )
+  };
+
+  if (!payload.id)
+    delete payload.id;
+
+  const { error } =
+    await supabaseClient
+      .from("experience")
+      .upsert(payload);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+async function saveProject(item) {
+
+  if (!supabaseClient) {
+
+    const id =
+      item.id
+        ? Number(item.id)
+        : nextId(state.projects);
+
+    const saved = {
+      ...item,
+      id
+    };
+
+    state.projects =
+      state.projects
+        .filter(
+          x =>
+            Number(x.id) !== id
+        )
+        .concat(saved);
+
+    localSet(
+      "projects",
+      state.projects
+    );
+
+    renderAll();
+
+    return;
+  }
+
+  const payload = {
+    ...item,
+    sort_order:
+      Number(
+        item.sort_order || 0
+      )
+  };
+
+  if (!payload.id)
+    delete payload.id;
+
+  const { error } =
+    await supabaseClient
+      .from("projects")
+      .upsert(payload);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+async function saveSocialLink(item) {
+
+  if (!supabaseClient) {
+
+    const id =
+      item.id
+        ? Number(item.id)
+        : nextId(
+            state.social_links
+          );
+
+    const saved = {
+      ...item,
+      id
+    };
+
+    state.social_links =
+      state.social_links
+        .filter(
+          x =>
+            Number(x.id) !== id
+        )
+        .concat(saved);
+
+    localSet(
+      "social_links",
+      state.social_links
+    );
+
+    renderAll();
+
+    return;
+  }
+
+  const payload = {
+    ...item,
+    sort_order:
+      Number(
+        item.sort_order || 0
+      )
+  };
+
+  if (!payload.id)
+    delete payload.id;
+
+  const { error } =
+    await supabaseClient
+      .from("social_links")
+      .upsert(payload);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+async function deleteExperience(id) {
+
+  const { error } =
+    await supabaseClient
+      .from("experience")
+      .delete()
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+async function deleteProject(id) {
+
+  const { error } =
+    await supabaseClient
+      .from("projects")
+      .delete()
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+async function deleteSocialLink(id) {
+
+  const { error } =
+    await supabaseClient
+      .from("social_links")
+      .delete()
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
 async function deletePhoto(id) {
   if (!supabaseClient) {
     state.photos = state.photos.filter((item) => Number(item.id) !== Number(id));
