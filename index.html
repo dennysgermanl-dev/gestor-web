@@ -19,10 +19,20 @@
         <span>Gestor</span>
       </a>
       <nav class="nav-links" aria-label="Navegacion del gestor">
-        <a href="#perfil">Perfil</a>
-        <a href="#intereses">Intereses</a>
-        <a href="#fotos">Fotos</a>
-      </nav>
+
+  <a href="#perfil">Perfil</a>
+
+  <a href="#intereses">Especialidades</a>
+
+  <a href="#experiencia">Experiencia</a>
+
+  <a href="#proyectos">Proyectos</a>
+
+  <a href="#redes">Redes</a>
+
+  <a href="#fotos">Galería</a>
+
+</nav>
     </header>
 
     <main class="admin-shell manager-shell">
@@ -136,6 +146,354 @@
           <div class="manager-grid" id="highlight-list"></div>
         </section>
 
+        <section class="manager-panel" id="experiencia">
+
+  <div class="panel-heading">
+
+    <div>
+
+      <p class="eyebrow">
+        Trayectoria
+      </p>
+
+      <h2>
+        Experiencia y formación
+      </h2>
+
+    </div>
+
+    <button
+      class="button primary"
+      type="button"
+      id="new-experience">
+
+      Nueva experiencia
+
+    </button>
+
+  </div>
+
+  <form
+    class="editor-form elevated-form"
+    id="experience-form"
+    hidden>
+
+    <input
+      type="hidden"
+      name="id">
+
+    <label>
+
+      Cargo o título
+
+      <input
+        name="title"
+        type="text"
+        required>
+
+    </label>
+
+    <label>
+
+      Empresa / Institución
+
+      <input
+        name="company"
+        type="text">
+
+    </label>
+
+    <label>
+
+      Período
+
+      <input
+        name="period"
+        type="text"
+        placeholder="2023 - Actualidad">
+
+    </label>
+
+    <label>
+
+      Orden
+
+      <input
+        name="sort_order"
+        type="number"
+        value="0">
+
+    </label>
+
+    <label>
+
+      Descripción
+
+      <textarea
+        name="description"
+        rows="4"></textarea>
+
+    </label>
+
+    <div class="form-actions">
+
+      <button
+        class="button primary"
+        type="submit">
+
+        Guardar
+
+      </button>
+
+      <button
+        class="button ghost"
+        type="button"
+        id="cancel-experience">
+
+        Cancelar
+
+      </button>
+
+    </div>
+
+  </form>
+
+  <div
+    class="manager-grid"
+    id="experience-list">
+
+  </div>
+
+</section>
+        <section class="manager-panel" id="proyectos">
+
+  <div class="panel-heading">
+
+    <div>
+
+      <p class="eyebrow">
+        Portfolio
+      </p>
+
+      <h2>
+        Proyectos realizados
+      </h2>
+
+    </div>
+
+    <button
+      class="button primary"
+      type="button"
+      id="new-project">
+
+      Nuevo proyecto
+
+    </button>
+
+  </div>
+
+  <form
+    class="editor-form elevated-form"
+    id="project-form"
+    hidden>
+
+    <input
+      type="hidden"
+      name="id">
+
+    <label>
+
+      Nombre del proyecto
+
+      <input
+        name="title"
+        type="text"
+        required>
+
+    </label>
+
+    <label>
+
+      URL del proyecto
+
+      <input
+        name="project_url"
+        type="url">
+
+    </label>
+
+    <label>
+
+      Tecnologías
+
+      <input
+        name="technologies"
+        type="text">
+
+    </label>
+
+    <label>
+
+      Orden
+
+      <input
+        name="sort_order"
+        type="number"
+        value="0">
+
+    </label>
+
+    <label>
+
+      Descripción
+
+      <textarea
+        name="description"
+        rows="4"></textarea>
+
+    </label>
+
+    <div class="form-actions">
+
+      <button
+        class="button primary"
+        type="submit">
+
+        Guardar
+
+      </button>
+
+      <button
+        class="button ghost"
+        type="button"
+        id="cancel-project">
+
+        Cancelar
+
+      </button>
+
+    </div>
+
+  </form>
+
+  <div
+    class="manager-grid"
+    id="projects-list">
+
+  </div>
+
+</section>
+        <section class="manager-panel" id="redes">
+
+  <div class="panel-heading">
+
+    <div>
+
+      <p class="eyebrow">
+        Contacto
+      </p>
+
+      <h2>
+        Redes sociales
+      </h2>
+
+    </div>
+
+    <button
+      class="button primary"
+      type="button"
+      id="new-social">
+
+      Nueva red
+
+    </button>
+
+  </div>
+
+  <form
+    class="editor-form elevated-form"
+    id="social-form"
+    hidden>
+
+    <input
+      type="hidden"
+      name="id">
+
+    <label>
+
+      Plataforma
+
+      <input
+        name="platform"
+        type="text"
+        placeholder="LinkedIn"
+        required>
+
+    </label>
+
+    <label>
+
+      URL
+
+      <input
+        name="url"
+        type="url"
+        required>
+
+    </label>
+
+    <label>
+
+      Icono
+
+      <input
+        name="icon"
+        type="text"
+        placeholder="linkedin">
+
+    </label>
+
+    <label>
+
+      Orden
+
+      <input
+        name="sort_order"
+        type="number"
+        value="0">
+
+    </label>
+
+    <div class="form-actions">
+
+      <button
+        class="button primary"
+        type="submit">
+
+        Guardar
+
+      </button>
+
+      <button
+        class="button ghost"
+        type="button"
+        id="cancel-social">
+
+        Cancelar
+
+      </button>
+
+    </div>
+
+  </form>
+
+  <div
+    class="manager-grid"
+    id="social-list">
+
+  </div>
+
+</section>
         <section class="manager-panel" id="fotos">
           <div class="panel-heading">
             <div>
