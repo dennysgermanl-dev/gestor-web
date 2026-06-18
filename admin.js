@@ -1,328 +1,352 @@
 const defaults = {
-
   profile: {
-    name: "Mi perfil personal",
-    headline: "Tecnología, análisis y fotografía",
+    name: "Mi Portfolio",
+    headline: "Tecnología, análisis y creatividad",
+    profession: "",
     location: "Perú",
     avatar_url: "",
-    about:
-      "Soy una persona comprometida con el aprendizaje continuo y el crecimiento profesional.",
-    focus:
-      "Integrar tecnología, análisis y creatividad para desarrollar soluciones modernas."
+    email: "",
+    phone: "",
+    linkedin: "",
+    github: "",
+    about: "",
+    focus: ""
   },
 
   highlights: [],
-
-  photos: [],
-
   experience: [],
-
   projects: [],
-
+  photos: [],
   social_links: []
-
 };
 
 let supabaseClient = null;
+
 let state = {
-
-  profile: { ...defaults.profile },
-
+  profile: defaults.profile,
   highlights: [],
-
-  photos: [],
-
   experience: [],
-
   projects: [],
-
+  photos: [],
   social_links: []
-
 };
 
-const $ = (selector) => document.querySelector(selector);
 const hasSupabaseConfig = () =>
-  Boolean(window.SUPABASE_CONFIG?.url && window.SUPABASE_CONFIG?.anonKey);
+  Boolean(
+    window.SUPABASE_CONFIG?.url &&
+    window.SUPABASE_CONFIG?.anonKey
+  );
+
 const localGet = (key, fallback) => {
   const saved = localStorage.getItem(key);
   return saved ? JSON.parse(saved) : fallback;
 };
-const localSet = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-const nextId = (items) => Math.max(0, ...items.map((item) => Number(item.id) || 0)) + 1;
-const bucketName = () => window.SUPABASE_CONFIG?.storageBucket || "gallery";
 
-function escapeHTML(value = "") {
-  return String(value).replace(/[&<>"']/g, (char) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]
-  );
-}
+const localSet = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
+const nextId = items =>
+  Math.max(
+    0,
+    ...items.map(item => Number(item.id) || 0)
+  ) + 1;
 
 function setupClient() {
-  if (!hasSupabaseConfig()) return null;
-  return window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
-}
 
-function showToast(message) {
-  const toast = $("#toast");
-  toast.textContent = message;
-  toast.hidden = false;
-  window.clearTimeout(showToast.timer);
-  showToast.timer = window.setTimeout(() => {
-    toast.hidden = true;
-  }, 2600);
-}
+  if (!hasSupabaseConfig())
+    return null;
 
-function setLoading(isLoading) {
-  document.body.classList.toggle("is-saving", isLoading);
+  return window.supabase.createClient(
+    window.SUPABASE_CONFIG.url,
+    window.SUPABASE_CONFIG.anonKey
+  );
+
 }
 
 async function loadState() {
+
   supabaseClient = setupClient();
-  $("#admin-content").hidden = false;
-  $("#auth-panel").hidden = true;
-  $("#logout-button").hidden = !supabaseClient;
-  $("#storage-status").textContent = supabaseClient
-    ? "Conectado a Supabase. Los cambios se guardaran en tu base de datos."
-    : "Modo local. Puedes probar el gestor ahora; para guardar en la nube, completa supabase-config.js.";
+
+  document.querySelector("#admin-content").hidden = false;
+  document.querySelector("#auth-panel").hidden = true;
+
+  document.querySelector("#storage-status").textContent =
+    supabaseClient
+      ? "Conectado a Supabase."
+      : "Modo local.";
 
   if (!supabaseClient) {
+
     state = {
 
-  profile:
-    localGet(
-      "profile",
-      defaults.profile
-    ),
+      profile:
+        localGet(
+          "profile",
+          defaults.profile
+        ),
 
-  highlights:
-    localGet(
-      "highlights",
-      defaults.highlights
-    ),
+      highlights:
+        localGet(
+          "highlights",
+          defaults.highlights
+        ),
 
-  photos:
-    localGet(
-      "photos",
-      defaults.photos
-    ),
+      experience:
+        localGet(
+          "experience",
+          defaults.experience
+        ),
 
-  experience:
-    localGet(
-      "experience",
-      defaults.experience
-    ),
+      projects:
+        localGet(
+          "projects",
+          defaults.projects
+        ),
 
-  projects:
-    localGet(
-      "projects",
-      defaults.projects
-    ),
+      photos:
+        localGet(
+          "photos",
+          defaults.photos
+        ),
 
-  social_links:
-    localGet(
-      "social_links",
-      defaults.social_links
-    )
+      social_links:
+        localGet(
+          "social_links",
+          defaults.social_links
+        )
 
-};
+    };
+
     renderAll();
+
     return;
+
   }
 
-  const { data: sessionData } = await supabaseClient.auth.getSession();
+  const {
+    data: sessionData
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
   if (!sessionData.session) {
-    $("#storage-status").textContent = "Conectado a Supabase. Inicia sesion para editar tu contenido.";
-    $("#admin-content").hidden = true;
-    $("#auth-panel").hidden = false;
-    $("#logout-button").hidden = true;
+
+    document.querySelector(
+      "#storage-status"
+    ).textContent =
+      "Inicia sesión para administrar el contenido.";
+
+    document.querySelector(
+      "#admin-content"
+    ).hidden = true;
+
+    document.querySelector(
+      "#auth-panel"
+    ).hidden = false;
+
     return;
+
   }
 
   const [
 
-  { data: profile },
+    { data: profile },
 
-  { data: highlights },
+    { data: highlights },
 
-  { data: photos },
+    { data: experience },
 
-  { data: experience },
+    { data: projects },
 
-  { data: projects },
+    { data: photos },
 
-  { data: socialLinks }
+    { data: socialLinks }
 
-] = await Promise.all([
+  ] = await Promise.all([
 
-  supabaseClient
-    .from("profile")
-    .select("*")
-    .eq("id", 1)
-    .single(),
+    supabaseClient
+      .from("profile")
+      .select("*")
+      .eq("id", 1)
+      .single(),
 
-  supabaseClient
-    .from("highlights")
-    .select("*")
-    .order("sort_order", {
-      ascending: true
-    }),
+    supabaseClient
+      .from("highlights")
+      .select("*")
+      .order("sort_order"),
 
-  supabaseClient
-    .from("photos")
-    .select("*")
-    .order("sort_order", {
-      ascending: true
-    }),
+    supabaseClient
+      .from("experience")
+      .select("*")
+      .order("sort_order"),
 
-  supabaseClient
-    .from("experience")
-    .select("*")
-    .order("sort_order", {
-      ascending: true
-    }),
+    supabaseClient
+      .from("projects")
+      .select("*")
+      .order("sort_order"),
 
-  supabaseClient
-    .from("projects")
-    .select("*")
-    .order("sort_order", {
-      ascending: true
-    }),
+    supabaseClient
+      .from("photos")
+      .select("*")
+      .order("sort_order"),
 
-  supabaseClient
-    .from("social_links")
-    .select("*")
-    .order("sort_order", {
-      ascending: true
-    })
+    supabaseClient
+      .from("social_links")
+      .select("*")
+      .order("sort_order")
 
-]);
-  
-state = {
+  ]);
 
-  profile:
-    profile || defaults.profile,
+  state = {
 
-  highlights:
-    highlights || [],
+    profile:
+      profile ||
+      defaults.profile,
 
-  photos:
-    photos || [],
+    highlights:
+      highlights || [],
 
-  experience:
-    experience || [],
+    experience:
+      experience || [],
 
-  projects:
-    projects || [],
+    projects:
+      projects || [],
 
-  social_links:
-    socialLinks || []
+    photos:
+      photos || [],
 
-};
+    social_links:
+      socialLinks || []
+
+  };
+
   renderAll();
-}
-
-function renderAll() {
-
-  hideForms();
-
-  renderProfile();
-
-  renderHighlights();
-
-  renderPhotos();
-
-  renderExperience();
-
-  renderProjects();
-
-  renderSocialLinks();
 
 }
+function fillProfileForm() {
 
-function hideForms() {
-  $("#profile-form").hidden = true;
-  $("#highlight-form").hidden = true;
-  $("#photo-form").hidden = true;
+  const form =
+    document.querySelector(
+      "#profile-form"
+    );
+
+  Object.entries(
+    state.profile
+  ).forEach(([key, value]) => {
+
+    if (form.elements[key]) {
+
+      form.elements[key].value =
+        value || "";
+
+    }
+
+  });
+
 }
 
-function renderProfile() {
-  const profile = state.profile || defaults.profile;
-  const avatar = profile.avatar_url
-    ? `<img src="${escapeHTML(profile.avatar_url)}" alt="${escapeHTML(profile.name)}" />`
-    : `<span>Foto</span>`;
-
-  $("#profile-summary").innerHTML = `
-    <div class="summary-avatar ${profile.avatar_url ? "" : "empty"}">${avatar}</div>
-    <div class="summary-copy">
-      <h3>${escapeHTML(profile.name)}</h3>
-      <p class="summary-headline">${escapeHTML(profile.headline || "Sin frase principal")}</p>
-      <p>${escapeHTML(profile.about || "Sin descripcion.")}</p>
-      <p>${escapeHTML(profile.focus || "Sin objetivo registrado.")}</p>
-      <span class="status-pill">${escapeHTML(profile.location || "Sin ubicacion")}</span>
-    </div>
-  `;
-}
+/* ==========================================
+   HIGHLIGHTS
+========================================== */
 
 function renderHighlights() {
-  const list = $("#highlight-list");
+
+  const list =
+    document.querySelector(
+      "#highlight-list"
+    );
+
+  if (!list) return;
+
   list.innerHTML = "";
 
   if (!state.highlights.length) {
-    list.innerHTML = `<div class="empty-state">No hay intereses publicados.</div>`;
+
+    list.innerHTML = `
+      <div class="empty-state">
+        No hay especialidades registradas.
+      </div>
+    `;
+
     return;
+
   }
 
   state.highlights
-    .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
-    .forEach((item) => {
-      const row = document.createElement("article");
-      row.className = "content-card";
+
+    .sort(
+      (a, b) =>
+        Number(a.sort_order || 0) -
+        Number(b.sort_order || 0)
+    )
+
+    .forEach(item => {
+
+      const row =
+        document.createElement(
+          "article"
+        );
+
+      row.className =
+        "manager-item";
+
       row.innerHTML = `
-        <div class="card-kicker">Orden ${escapeHTML(item.sort_order ?? 0)}</div>
-        <h3>${escapeHTML(item.title)}</h3>
-        <p>${escapeHTML(item.description)}</p>
-        <div class="manager-actions">
-          <button class="small-button" data-edit-highlight="${escapeHTML(item.id)}">Editar</button>
-          <button class="small-button delete" data-delete-highlight="${escapeHTML(item.id)}">Eliminar</button>
+
+        <div>
+
+          <h3>
+            ${item.title}
+          </h3>
+
+          <p>
+            ${item.description || ""}
+          </p>
+
+          <small>
+            Orden:
+            ${item.sort_order || 0}
+          </small>
+
         </div>
+
+        <div class="manager-actions">
+
+          <button
+            class="small-button"
+            data-edit-highlight="${item.id}"
+          >
+            Editar
+          </button>
+
+          <button
+            class="small-button delete"
+            data-delete-highlight="${item.id}"
+          >
+            Eliminar
+          </button>
+
+        </div>
+
       `;
+
       list.append(row);
+
     });
+
 }
 
-function renderPhotos() {
-  const list = $("#photo-list");
-  list.innerHTML = "";
-
-  if (!state.photos.length) {
-    list.innerHTML = `<div class="empty-state">Aun no has agregado fotografias.</div>`;
-    return;
-  }
-
-  state.photos
-    .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
-    .forEach((photo) => {
-      const row = document.createElement("article");
-      row.className = "content-card photo-card";
-      row.innerHTML = `
-        <div class="photo-thumb">
-          ${photo.image_url ? `<img src="${escapeHTML(photo.image_url)}" alt="${escapeHTML(photo.title)}" />` : ""}
-        </div>
-        <div class="card-kicker">${escapeHTML(photo.location || "Sin ubicacion")}</div>
-        <h3>${escapeHTML(photo.title)}</h3>
-        <p>${escapeHTML(photo.description)}</p>
-        <div class="manager-actions">
-          <button class="small-button" data-edit-photo="${escapeHTML(photo.id)}">Editar</button>
-          <button class="small-button delete" data-delete-photo="${escapeHTML(photo.id)}">Eliminar</button>
-        </div>
-      `;
-      list.append(row);
-    });
-}
+/* ==========================================
+   EXPERIENCE
+========================================== */
 
 function renderExperience() {
 
-  const list = $("#experience-list");
+  const list =
+    document.querySelector(
+      "#experience-list"
+    );
 
   if (!list) return;
 
@@ -337,50 +361,61 @@ function renderExperience() {
     `;
 
     return;
+
   }
 
   state.experience
-    .sort((a, b) =>
-      Number(a.sort_order || 0) -
-      Number(b.sort_order || 0)
+
+    .sort(
+      (a, b) =>
+        Number(a.sort_order || 0) -
+        Number(b.sort_order || 0)
     )
-    .forEach((item) => {
 
-      const card =
-        document.createElement("article");
+    .forEach(item => {
 
-      card.className =
-        "content-card";
+      const row =
+        document.createElement(
+          "article"
+        );
 
-      card.innerHTML = `
+      row.className =
+        "manager-item";
 
-        <div class="card-kicker">
-          ${escapeHTML(item.period || "")}
+      row.innerHTML = `
+
+        <div>
+
+          <h3>
+            ${item.year}
+            —
+            ${item.title}
+          </h3>
+
+          <p>
+            ${item.description || ""}
+          </p>
+
+          <small>
+            Orden:
+            ${item.sort_order || 0}
+          </small>
+
         </div>
-
-        <h3>
-          ${escapeHTML(item.title)}
-        </h3>
-
-        <strong>
-          ${escapeHTML(item.company || "")}
-        </strong>
-
-        <p>
-          ${escapeHTML(item.description || "")}
-        </p>
 
         <div class="manager-actions">
 
           <button
             class="small-button"
-            data-edit-experience="${item.id}">
+            data-edit-experience="${item.id}"
+          >
             Editar
           </button>
 
           <button
             class="small-button delete"
-            data-delete-experience="${item.id}">
+            data-delete-experience="${item.id}"
+          >
             Eliminar
           </button>
 
@@ -388,16 +423,22 @@ function renderExperience() {
 
       `;
 
-      list.append(card);
+      list.append(row);
 
     });
 
 }
 
+/* ==========================================
+   PROJECTS
+========================================== */
+
 function renderProjects() {
 
   const list =
-    $("#projects-list");
+    document.querySelector(
+      "#project-list"
+    );
 
   if (!list) return;
 
@@ -407,47 +448,75 @@ function renderProjects() {
 
     list.innerHTML = `
       <div class="empty-state">
-        No hay proyectos publicados.
+        No hay proyectos registrados.
       </div>
     `;
 
     return;
+
   }
 
   state.projects
-    .sort((a, b) =>
-      Number(a.sort_order || 0) -
-      Number(b.sort_order || 0)
+
+    .sort(
+      (a, b) =>
+        Number(a.sort_order || 0) -
+        Number(b.sort_order || 0)
     )
-    .forEach((project) => {
 
-      const card =
-        document.createElement("article");
+    .forEach(project => {
 
-      card.className =
-        "content-card";
+      const row =
+        document.createElement(
+          "article"
+        );
 
-      card.innerHTML = `
+      row.className =
+        "manager-item";
 
-        <h3>
-          ${escapeHTML(project.title)}
-        </h3>
+      row.innerHTML = `
 
-        <p>
-          ${escapeHTML(project.description)}
-        </p>
+        <div>
+
+          ${
+            project.image_url
+              ? `
+                <img
+                  src="${project.image_url}"
+                  alt="${project.title}"
+                >
+              `
+              : ""
+          }
+
+          <h3>
+            ${project.title}
+          </h3>
+
+          <p>
+            ${project.description || ""}
+          </p>
+
+          <small>
+            Orden:
+            ${project.sort_order || 0}
+          </small>
+
+        </div>
 
         <div class="manager-actions">
 
           <button
             class="small-button"
-            data-edit-project="${project.id}">
+            data-edit-project="${project.id}"
+          >
             Editar
           </button>
 
           <button
             class="small-button delete"
-            data-delete-project="${project.id}">
+            data-delete-project="${project.id}"
+          >
             Eliminar
           </button>
 
@@ -455,16 +524,118 @@ function renderProjects() {
 
       `;
 
-      list.append(card);
+      list.append(row);
 
     });
 
 }
 
+/* ==========================================
+   PHOTOS
+========================================== */
+
+function renderPhotos() {
+
+  const list =
+    document.querySelector(
+      "#photo-list"
+    );
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!state.photos.length) {
+
+    list.innerHTML = `
+      <div class="empty-state">
+        No hay fotografías registradas.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  state.photos
+
+    .sort(
+      (a, b) =>
+        Number(a.sort_order || 0) -
+        Number(b.sort_order || 0)
+    )
+
+    .forEach(photo => {
+
+      const row =
+        document.createElement(
+          "article"
+        );
+
+      row.className =
+        "manager-item";
+
+      row.innerHTML = `
+
+        <div>
+
+          ${
+            photo.image_url
+              ? `
+                <img
+                  src="${photo.image_url}"
+                  alt="${photo.title}"
+                >
+              `
+              : ""
+          }
+
+          <h3>
+            ${photo.title}
+          </h3>
+
+          <p>
+            ${photo.location || ""}
+          </p>
+
+        </div>
+
+        <div class="manager-actions">
+
+          <button
+            class="small-button"
+            data-edit-photo="${photo.id}"
+          >
+            Editar
+          </button>
+
+          <button
+            class="small-button delete"
+            data-delete-photo="${photo.id}"
+          >
+            Eliminar
+          </button>
+
+        </div>
+
+      `;
+
+      list.append(row);
+
+    });
+
+}
+
+/* ==========================================
+   SOCIAL LINKS
+========================================== */
+
 function renderSocialLinks() {
 
   const list =
-    $("#social-list");
+    document.querySelector(
+      "#social-list"
+    );
 
   if (!list) return;
 
@@ -474,51 +645,59 @@ function renderSocialLinks() {
 
     list.innerHTML = `
       <div class="empty-state">
-        No hay redes registradas.
+        No hay redes configuradas.
       </div>
     `;
 
     return;
+
   }
 
   state.social_links
-    .sort((a, b) =>
-      Number(a.sort_order || 0) -
-      Number(b.sort_order || 0)
+
+    .sort(
+      (a, b) =>
+        Number(a.sort_order || 0) -
+        Number(b.sort_order || 0)
     )
-    .forEach((social) => {
 
-      const card =
-        document.createElement("article");
+    .forEach(item => {
 
-      card.className =
-        "content-card";
+      const row =
+        document.createElement(
+          "article"
+        );
 
-      card.innerHTML = `
+      row.className =
+        "manager-item";
 
-        <h3>
-          ${escapeHTML(
-            social.platform
-          )}
-        </h3>
+      row.innerHTML = `
 
-        <p>
-          ${escapeHTML(
-            social.url
-          )}
-        </p>
+        <div>
+
+          <h3>
+            ${item.platform}
+          </h3>
+
+          <p>
+            ${item.url}
+          </p>
+
+        </div>
 
         <div class="manager-actions">
 
           <button
             class="small-button"
-            data-edit-social="${social.id}">
+            data-edit-social="${item.id}"
+          >
             Editar
           </button>
 
           <button
             class="small-button delete"
-            data-delete-social="${social.id}">
+            data-delete-social="${item.id}"
+          >
             Eliminar
           </button>
 
@@ -526,200 +705,132 @@ function renderSocialLinks() {
 
       `;
 
-      list.append(card);
+      list.append(row);
 
     });
 
 }
 
-function renderPreview(selector, imageUrl) {
-  const preview = $(selector);
-  if (!imageUrl) {
-    preview.hidden = true;
-    preview.innerHTML = "";
-    return;
-  }
-  preview.hidden = false;
-  preview.innerHTML = `<img src="${escapeHTML(imageUrl)}" alt="Vista previa" />`;
+/* ==========================================
+   RENDER GENERAL
+========================================== */
+
+function renderAll() {
+
+  fillProfileForm();
+
+  renderHighlights();
+
+  renderExperience();
+
+  renderProjects();
+
+  renderPhotos();
+
+  renderSocialLinks();
+
 }
-
-function fillProfileForm() {
-  const form = $("#profile-form");
-  const profile = state.profile || defaults.profile;
-  Object.entries(profile).forEach(([key, value]) => {
-    if (form.elements[key]) form.elements[key].value = value || "";
-  });
-  renderPreview("#profile-preview", profile.avatar_url);
-  form.hidden = false;
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function resetHighlightForm(item = {}) {
-  const form = $("#highlight-form");
-  form.reset();
-  form.elements.id.value = item.id || "";
-  form.elements.title.value = item.title || "";
-  form.elements.description.value = item.description || "";
-  form.elements.sort_order.value = item.sort_order ?? 0;
-  form.hidden = false;
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function resetPhotoForm(item = {}) {
-  const form = $("#photo-form");
-  form.reset();
-  form.elements.id.value = item.id || "";
-  form.elements.title.value = item.title || "";
-  form.elements.description.value = item.description || "";
-  form.elements.location.value = item.location || "";
-  form.elements.sort_order.value = item.sort_order ?? 0;
-  form.elements.image_url.value = item.image_url || "";
-  form.elements.external_url.value = item.image_url || "";
-  renderPreview("#photo-preview", item.image_url);
-  form.hidden = false;
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-async function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadImageFile(file, folder) {
-  if (!file || !file.size) return "";
-
-  if (!supabaseClient) {
-    return fileToDataUrl(file);
-  }
-
-  const extension = file.name.split(".").pop();
-  const path = `${folder}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-  const { error } = await supabaseClient.storage.from(bucketName()).upload(path, file, {
-    cacheControl: "3600",
-    upsert: false
-  });
-  if (error) throw error;
-
-  const { data } = supabaseClient.storage.from(bucketName()).getPublicUrl(path);
-  return data.publicUrl;
-}
+/* ==========================================
+   PROFILE
+========================================== */
 
 async function saveProfile(profile) {
+
   if (!supabaseClient) {
+
     state.profile = profile;
-    localSet("profile", profile);
+
+    localSet(
+      "profile",
+      profile
+    );
+
     return;
+
   }
 
-  const { error } = await supabaseClient
-    .from("profile")
-    .upsert({ id: 1, ...profile, updated_at: new Date().toISOString() });
-  if (error) throw error;
-  state.profile = profile;
+  const { error } =
+    await supabaseClient
+
+      .from("profile")
+
+      .upsert({
+
+        id: 1,
+
+        ...profile,
+
+        updated_at:
+          new Date().toISOString()
+
+      });
+
+  if (error)
+    throw error;
+
+  state.profile =
+    profile;
+
 }
 
-async function deleteProfile() {
-  if (!supabaseClient) {
-    state.profile = { ...defaults.profile };
-    localSet("profile", state.profile);
-    renderAll();
-    return;
-  }
-
-  const { error } = await supabaseClient.from("profile").delete().eq("id", 1);
-  if (error) throw error;
-  state.profile = { ...defaults.profile };
-  renderAll();
-}
+/* ==========================================
+   HIGHLIGHTS
+========================================== */
 
 async function saveHighlight(item) {
-  if (!supabaseClient) {
-    const id = item.id ? Number(item.id) : nextId(state.highlights);
-    const saved = { ...item, id, sort_order: Number(item.sort_order || 0) };
-    state.highlights = state.highlights.filter((entry) => Number(entry.id) !== id).concat(saved);
-    localSet("highlights", state.highlights);
-    renderAll();
-    return;
-  }
-
-  const payload = { ...item, sort_order: Number(item.sort_order || 0) };
-  if (!payload.id) delete payload.id;
-  const { error } = await supabaseClient.from("highlights").upsert(payload);
-  if (error) throw error;
-  await loadState();
-}
-
-async function deleteHighlight(id) {
-  if (!supabaseClient) {
-    state.highlights = state.highlights.filter((item) => Number(item.id) !== Number(id));
-    localSet("highlights", state.highlights);
-    renderAll();
-    return;
-  }
-
-  const { error } = await supabaseClient.from("highlights").delete().eq("id", id);
-  if (error) throw error;
-  await loadState();
-}
-
-async function savePhoto(item) {
-  if (!supabaseClient) {
-    const id = item.id ? Number(item.id) : nextId(state.photos);
-    const saved = { ...item, id, sort_order: Number(item.sort_order || 0) };
-    state.photos = state.photos.filter((entry) => Number(entry.id) !== id).concat(saved);
-    localSet("photos", state.photos);
-    renderAll();
-    return;
-  }
-
-  const payload = { ...item, sort_order: Number(item.sort_order || 0) };
-  if (!payload.id) delete payload.id;
-  const { error } = await supabaseClient.from("photos").upsert(payload);
-  if (error) throw error;
-  await loadState();
-}
-async function saveExperience(item) {
 
   if (!supabaseClient) {
 
     const id =
       item.id
         ? Number(item.id)
-        : nextId(state.experience);
+        : nextId(
+            state.highlights
+          );
 
     const saved = {
+
       ...item,
-      id
+
+      id,
+
+      sort_order:
+        Number(
+          item.sort_order || 0
+        )
+
     };
 
-    state.experience =
-      state.experience
+    state.highlights =
+      state.highlights
+
         .filter(
           x =>
             Number(x.id) !== id
         )
+
         .concat(saved);
 
     localSet(
-      "experience",
-      state.experience
+      "highlights",
+      state.highlights
     );
 
-    renderAll();
+    renderHighlights();
 
     return;
+
   }
 
   const payload = {
+
     ...item,
+
     sort_order:
       Number(
         item.sort_order || 0
       )
+
   };
 
   if (!payload.id)
@@ -727,7 +838,9 @@ async function saveExperience(item) {
 
   const { error } =
     await supabaseClient
-      .from("experience")
+
+      .from("highlights")
+
       .upsert(payload);
 
   if (error)
@@ -736,6 +849,163 @@ async function saveExperience(item) {
   await loadState();
 
 }
+
+async function deleteHighlight(id) {
+
+  if (!supabaseClient) {
+
+    state.highlights =
+      state.highlights.filter(
+        item =>
+          Number(item.id) !==
+          Number(id)
+      );
+
+    localSet(
+      "highlights",
+      state.highlights
+    );
+
+    renderHighlights();
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient
+
+      .from("highlights")
+
+      .delete()
+
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+/* ==========================================
+   EXPERIENCE
+========================================== */
+
+async function saveExperience(item) {
+
+  if (!supabaseClient) {
+
+    const id =
+      item.id
+        ? Number(item.id)
+        : nextId(
+            state.experience
+          );
+
+    const saved = {
+
+      ...item,
+
+      id,
+
+      sort_order:
+        Number(
+          item.sort_order || 0
+        )
+
+    };
+
+    state.experience =
+      state.experience
+
+        .filter(
+          x =>
+            Number(x.id) !== id
+        )
+
+        .concat(saved);
+
+    localSet(
+      "experience",
+      state.experience
+    );
+
+    renderExperience();
+
+    return;
+
+  }
+
+  const payload = {
+
+    ...item,
+
+    sort_order:
+      Number(
+        item.sort_order || 0
+      )
+
+  };
+
+  if (!payload.id)
+    delete payload.id;
+
+  const { error } =
+    await supabaseClient
+
+      .from("experience")
+
+      .upsert(payload);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+async function deleteExperience(id) {
+
+  if (!supabaseClient) {
+
+    state.experience =
+      state.experience.filter(
+        item =>
+          Number(item.id) !==
+          Number(id)
+      );
+
+    localSet(
+      "experience",
+      state.experience
+    );
+
+    renderExperience();
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient
+
+      .from("experience")
+
+      .delete()
+
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+/* ==========================================
+   PROJECTS
+========================================== */
 
 async function saveProject(item) {
 
@@ -744,19 +1014,31 @@ async function saveProject(item) {
     const id =
       item.id
         ? Number(item.id)
-        : nextId(state.projects);
+        : nextId(
+            state.projects
+          );
 
     const saved = {
+
       ...item,
-      id
+
+      id,
+
+      sort_order:
+        Number(
+          item.sort_order || 0
+        )
+
     };
 
     state.projects =
       state.projects
+
         .filter(
           x =>
             Number(x.id) !== id
         )
+
         .concat(saved);
 
     localSet(
@@ -764,17 +1046,21 @@ async function saveProject(item) {
       state.projects
     );
 
-    renderAll();
+    renderProjects();
 
     return;
+
   }
 
   const payload = {
+
     ...item,
+
     sort_order:
       Number(
         item.sort_order || 0
       )
+
   };
 
   if (!payload.id)
@@ -782,7 +1068,9 @@ async function saveProject(item) {
 
   const { error } =
     await supabaseClient
+
       .from("projects")
+
       .upsert(payload);
 
   if (error)
@@ -791,6 +1079,164 @@ async function saveProject(item) {
   await loadState();
 
 }
+
+async function deleteProject(id) {
+
+  if (!supabaseClient) {
+
+    state.projects =
+      state.projects.filter(
+        item =>
+          Number(item.id) !==
+          Number(id)
+      );
+
+    localSet(
+      "projects",
+      state.projects
+    );
+
+    renderProjects();
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient
+
+      .from("projects")
+
+      .delete()
+
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+/* ==========================================
+   PHOTOS
+========================================== */
+
+async function savePhoto(item) {
+
+  if (!supabaseClient) {
+
+    const id =
+      item.id
+        ? Number(item.id)
+        : nextId(
+            state.photos
+          );
+
+    const saved = {
+
+      ...item,
+
+      id,
+
+      sort_order:
+        Number(
+          item.sort_order || 0
+        )
+
+    };
+
+    state.photos =
+      state.photos
+
+        .filter(
+          x =>
+            Number(x.id) !== id
+        )
+
+        .concat(saved);
+
+    localSet(
+      "photos",
+      state.photos
+    );
+
+    renderPhotos();
+
+    return;
+
+  }
+
+  const payload = {
+
+    ...item,
+
+    sort_order:
+      Number(
+        item.sort_order || 0
+      )
+
+  };
+
+  if (!payload.id)
+    delete payload.id;
+
+  const { error } =
+    await supabaseClient
+
+      .from("photos")
+
+      .upsert(payload);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+async function deletePhoto(id) {
+
+  if (!supabaseClient) {
+
+    state.photos =
+      state.photos.filter(
+        item =>
+          Number(item.id) !==
+          Number(id)
+      );
+
+    localSet(
+      "photos",
+      state.photos
+    );
+
+    renderPhotos();
+
+    return;
+
+  }
+
+  const { error } =
+    await supabaseClient
+
+      .from("photos")
+
+      .delete()
+
+      .eq("id", id);
+
+  if (error)
+    throw error;
+
+  await loadState();
+
+}
+
+/* ==========================================
+   SOCIAL LINKS
+========================================== */
+
 async function saveSocialLink(item) {
 
   if (!supabaseClient) {
@@ -803,16 +1249,26 @@ async function saveSocialLink(item) {
           );
 
     const saved = {
+
       ...item,
-      id
+
+      id,
+
+      sort_order:
+        Number(
+          item.sort_order || 0
+        )
+
     };
 
     state.social_links =
       state.social_links
+
         .filter(
           x =>
             Number(x.id) !== id
         )
+
         .concat(saved);
 
     localSet(
@@ -820,17 +1276,21 @@ async function saveSocialLink(item) {
       state.social_links
     );
 
-    renderAll();
+    renderSocialLinks();
 
     return;
+
   }
 
   const payload = {
+
     ...item,
+
     sort_order:
       Number(
         item.sort_order || 0
       )
+
   };
 
   if (!payload.id)
@@ -838,37 +1298,10 @@ async function saveSocialLink(item) {
 
   const { error } =
     await supabaseClient
+
       .from("social_links")
+
       .upsert(payload);
-
-  if (error)
-    throw error;
-
-  await loadState();
-
-}
-
-async function deleteExperience(id) {
-
-  const { error } =
-    await supabaseClient
-      .from("experience")
-      .delete()
-      .eq("id", id);
-
-  if (error)
-    throw error;
-
-  await loadState();
-
-}
-async function deleteProject(id) {
-
-  const { error } =
-    await supabaseClient
-      .from("projects")
-      .delete()
-      .eq("id", id);
 
   if (error)
     throw error;
@@ -879,10 +1312,33 @@ async function deleteProject(id) {
 
 async function deleteSocialLink(id) {
 
+  if (!supabaseClient) {
+
+    state.social_links =
+      state.social_links.filter(
+        item =>
+          Number(item.id) !==
+          Number(id)
+      );
+
+    localSet(
+      "social_links",
+      state.social_links
+    );
+
+    renderSocialLinks();
+
+    return;
+
+  }
+
   const { error } =
     await supabaseClient
+
       .from("social_links")
+
       .delete()
+
       .eq("id", id);
 
   if (error)
@@ -891,153 +1347,888 @@ async function deleteSocialLink(id) {
   await loadState();
 
 }
-async function deletePhoto(id) {
-  if (!supabaseClient) {
-    state.photos = state.photos.filter((item) => Number(item.id) !== Number(id));
-    localSet("photos", state.photos);
-    renderAll();
-    return;
-  }
+/* ==========================================
+   UTILIDADES DE IMAGEN
+========================================== */
 
-  const { error } = await supabaseClient.from("photos").delete().eq("id", id);
-  if (error) throw error;
-  await loadState();
+async function fileToDataUrl(file) {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => resolve(reader.result);
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
 }
 
-$("#login-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const { email, password } = Object.fromEntries(new FormData(form).entries());
-  setLoading(true);
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  setLoading(false);
-  if (error) {
-    showToast(error.message);
-    return;
-  }
-  form.reset();
-  await loadState();
-});
+async function uploadImage(file, folder = "uploads") {
 
-$("#logout-button").addEventListener("click", async () => {
-  if (supabaseClient) await supabaseClient.auth.signOut();
-  await loadState();
-});
+  if (!file)
+    return "";
 
-$("#edit-profile").addEventListener("click", fillProfileForm);
-$("#cancel-profile").addEventListener("click", () => {
-  $("#profile-form").hidden = true;
-});
-$("#delete-profile").addEventListener("click", async () => {
-  setLoading(true);
-  await deleteProfile();
-  setLoading(false);
-  showToast("Perfil eliminado");
-});
+  if (!supabaseClient) {
 
-$("#new-highlight").addEventListener("click", () => resetHighlightForm());
-$("#cancel-highlight").addEventListener("click", () => {
-  $("#highlight-form").hidden = true;
-});
+    return fileToDataUrl(file);
 
-$("#new-photo").addEventListener("click", () => resetPhotoForm());
-$("#cancel-photo").addEventListener("click", () => {
-  $("#photo-form").hidden = true;
-});
-
-$("#profile-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const data = new FormData(form);
-  const avatarFile = data.get("avatar_file");
-  setLoading(true);
-  const uploadedAvatar = avatarFile?.size ? await uploadImageFile(avatarFile, "profile") : "";
-  const profile = {
-    name: data.get("name"),
-    headline: data.get("headline"),
-    location: data.get("location"),
-    avatar_url: uploadedAvatar || data.get("avatar_url"),
-    about: data.get("about"),
-    focus: data.get("focus")
-  };
-  await saveProfile(profile);
-  setLoading(false);
-  $("#profile-form").hidden = true;
-  renderProfile();
-  showToast("Perfil guardado");
-});
-
-$("#highlight-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const item = Object.fromEntries(new FormData(form).entries());
-  setLoading(true);
-  await saveHighlight(item);
-  setLoading(false);
-  form.hidden = true;
-  showToast("Interes guardado");
-});
-
-$("#photo-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const data = new FormData(form);
-  const file = data.get("image_file");
-  setLoading(true);
-  const uploadedUrl = file?.size ? await uploadImageFile(file, "photos") : "";
-  const item = {
-    id: data.get("id"),
-    title: data.get("title"),
-    description: data.get("description"),
-    location: data.get("location"),
-    sort_order: data.get("sort_order"),
-    image_url: uploadedUrl || data.get("external_url") || data.get("image_url")
-  };
-  await savePhoto(item);
-  setLoading(false);
-  form.hidden = true;
-  showToast("Foto guardada");
-});
-
-$("#profile-form").elements.avatar_file.addEventListener("change", async (event) => {
-  const file = event.currentTarget.files[0];
-  renderPreview("#profile-preview", file ? await fileToDataUrl(file) : $("#profile-form").elements.avatar_url.value);
-});
-
-$("#photo-form").elements.image_file.addEventListener("change", async (event) => {
-  const file = event.currentTarget.files[0];
-  renderPreview("#photo-preview", file ? await fileToDataUrl(file) : $("#photo-form").elements.image_url.value);
-});
-
-document.addEventListener("click", async (event) => {
-  const editHighlight = event.target.closest("[data-edit-highlight]");
-  const deleteHighlightButton = event.target.closest("[data-delete-highlight]");
-  const editPhoto = event.target.closest("[data-edit-photo]");
-  const deletePhotoButton = event.target.closest("[data-delete-photo]");
-
-  if (editHighlight) {
-    const item = state.highlights.find((entry) => Number(entry.id) === Number(editHighlight.dataset.editHighlight));
-    if (item) resetHighlightForm(item);
   }
 
-  if (deleteHighlightButton) {
-    setLoading(true);
-    await deleteHighlight(deleteHighlightButton.dataset.deleteHighlight);
-    setLoading(false);
-    showToast("Interes eliminado");
-  }
+  const extension =
+    file.name
+      .split(".")
+      .pop();
 
-  if (editPhoto) {
-    const item = state.photos.find((entry) => Number(entry.id) === Number(editPhoto.dataset.editPhoto));
-    if (item) resetPhotoForm(item);
-  }
+  const path =
+    `${folder}/${
+      Date.now()
+    }-${
+      crypto.randomUUID()
+    }.${extension}`;
 
-  if (deletePhotoButton) {
-    setLoading(true);
-    await deletePhoto(deletePhotoButton.dataset.deletePhoto);
-    setLoading(false);
-    showToast("Foto eliminada");
+  const bucket =
+    window.SUPABASE_CONFIG
+      .storageBucket ||
+    "gallery";
+
+  const { error } =
+    await supabaseClient
+
+      .storage
+
+      .from(bucket)
+
+      .upload(
+        path,
+        file,
+        {
+          cacheControl: "3600",
+          upsert: false
+        }
+      );
+
+  if (error)
+    throw error;
+
+  const { data } =
+    supabaseClient
+
+      .storage
+
+      .from(bucket)
+
+      .getPublicUrl(path);
+
+  return data.publicUrl;
+
+}
+
+/* ==========================================
+   PROFILE FORM
+========================================== */
+
+document
+  .querySelector(
+    "#profile-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const form =
+        event.currentTarget;
+
+      const data =
+        new FormData(form);
+
+      const file =
+        data.get(
+          "avatar_file"
+        );
+
+      let avatarUrl =
+        data.get(
+          "avatar_url"
+        );
+
+      if (
+        file &&
+        file.size
+      ) {
+
+        avatarUrl =
+          await uploadImage(
+            file,
+            "avatars"
+          );
+
+      }
+
+      const profile = {
+
+        name:
+          data.get("name"),
+
+        headline:
+          data.get("headline"),
+
+        profession:
+          data.get("profession"),
+
+        location:
+          data.get("location"),
+
+        avatar_url:
+          avatarUrl,
+
+        email:
+          data.get("email"),
+
+        phone:
+          data.get("phone"),
+
+        linkedin:
+          data.get("linkedin"),
+
+        github:
+          data.get("github"),
+
+        about:
+          data.get("about"),
+
+        focus:
+          data.get("focus")
+
+      };
+
+      await saveProfile(
+        profile
+      );
+
+      alert(
+        "Perfil guardado"
+      );
+
+    }
+  );
+
+/* ==========================================
+   LOGIN
+========================================== */
+
+document
+  .querySelector(
+    "#login-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const {
+        email,
+        password
+      } =
+        Object.fromEntries(
+          new FormData(
+            event.currentTarget
+          ).entries()
+        );
+
+      const { error } =
+        await supabaseClient
+
+          .auth
+
+          .signInWithPassword({
+            email,
+            password
+          });
+
+      if (error) {
+
+        alert(
+          error.message
+        );
+
+        return;
+
+      }
+
+      event.currentTarget.reset();
+
+      await loadState();
+
+    }
+  );
+
+/* ==========================================
+   HIGHLIGHTS
+========================================== */
+
+document
+  .querySelector(
+    "#highlight-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const form =
+        event.currentTarget;
+
+      const item =
+        Object.fromEntries(
+          new FormData(
+            form
+          ).entries()
+        );
+
+      await saveHighlight(
+        item
+      );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+/* ==========================================
+   EXPERIENCE
+========================================== */
+
+document
+  .querySelector(
+    "#experience-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const form =
+        event.currentTarget;
+
+      const item =
+        Object.fromEntries(
+          new FormData(
+            form
+          ).entries()
+        );
+
+      await saveExperience(
+        item
+      );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+/* ==========================================
+   PROJECTS
+========================================== */
+
+document
+  .querySelector(
+    "#project-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const form =
+        event.currentTarget;
+
+      const data =
+        new FormData(form);
+
+      const file =
+        data.get(
+          "image_file"
+        );
+
+      const uploadedUrl =
+        file?.size
+          ? await uploadImage(
+              file,
+              "projects"
+            )
+          : "";
+
+      const item = {
+
+        id:
+          data.get("id"),
+
+        title:
+          data.get("title"),
+
+        description:
+          data.get(
+            "description"
+          ),
+
+        url:
+          data.get("url"),
+
+        sort_order:
+          data.get(
+            "sort_order"
+          ),
+
+        image_url:
+          uploadedUrl ||
+          data.get(
+            "image_url"
+          )
+
+      };
+
+      await saveProject(
+        item
+      );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+/* ==========================================
+   PHOTOS
+========================================== */
+
+document
+  .querySelector(
+    "#photo-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const form =
+        event.currentTarget;
+
+      const data =
+        new FormData(form);
+
+      const file =
+        data.get(
+          "image_file"
+        );
+
+      const uploadedUrl =
+        file?.size
+          ? await uploadImage(
+              file,
+              "photos"
+            )
+          : "";
+
+      const item = {
+
+        id:
+          data.get("id"),
+
+        title:
+          data.get("title"),
+
+        description:
+          data.get(
+            "description"
+          ),
+
+        location:
+          data.get(
+            "location"
+          ),
+
+        sort_order:
+          data.get(
+            "sort_order"
+          ),
+
+        image_url:
+          uploadedUrl ||
+          data.get(
+            "image_url"
+          )
+
+      };
+
+      await savePhoto(
+        item
+      );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+/* ==========================================
+   SOCIAL LINKS
+========================================== */
+
+document
+  .querySelector(
+    "#social-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const form =
+        event.currentTarget;
+
+      const item =
+        Object.fromEntries(
+          new FormData(
+            form
+          ).entries()
+        );
+
+      await saveSocialLink(
+        item
+      );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+/* ==========================================
+   BOTONES LIMPIAR
+========================================== */
+
+document
+  .querySelector(
+    "#clear-highlight"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      const form =
+        document.querySelector(
+          "#highlight-form"
+        );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+document
+  .querySelector(
+    "#clear-photo"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      const form =
+        document.querySelector(
+          "#photo-form"
+        );
+
+      form.reset();
+
+      form.elements.id.value =
+        "";
+
+    }
+  );
+
+/* ==========================================
+   EDITAR Y ELIMINAR
+========================================== */
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const target =
+      event.target;
+
+    /* HIGHLIGHTS */
+
+    if (
+      target.closest(
+        "[data-edit-highlight]"
+      )
+    ) {
+
+      const id =
+        target.closest(
+          "[data-edit-highlight]"
+        ).dataset
+          .editHighlight;
+
+      const item =
+        state.highlights.find(
+          x =>
+            Number(x.id) ===
+            Number(id)
+        );
+
+      const form =
+        document.querySelector(
+          "#highlight-form"
+        );
+
+      Object.entries(item)
+        .forEach(
+          ([k, v]) => {
+
+            if (
+              form.elements[k]
+            ) {
+
+              form.elements[
+                k
+              ].value =
+                v || "";
+
+            }
+
+          }
+        );
+
+    }
+
+    if (
+      target.closest(
+        "[data-delete-highlight]"
+      )
+    ) {
+
+      await deleteHighlight(
+        target.closest(
+          "[data-delete-highlight]"
+        ).dataset
+          .deleteHighlight
+      );
+
+    }
+
+    /* EXPERIENCE */
+
+    if (
+      target.closest(
+        "[data-edit-experience]"
+      )
+    ) {
+
+      const id =
+        target.closest(
+          "[data-edit-experience]"
+        ).dataset
+          .editExperience;
+
+      const item =
+        state.experience.find(
+          x =>
+            Number(x.id) ===
+            Number(id)
+        );
+
+      const form =
+        document.querySelector(
+          "#experience-form"
+        );
+
+      Object.entries(item)
+        .forEach(
+          ([k, v]) => {
+
+            if (
+              form.elements[k]
+            ) {
+
+              form.elements[
+                k
+              ].value =
+                v || "";
+
+            }
+
+          }
+        );
+
+    }
+
+    if (
+      target.closest(
+        "[data-delete-experience]"
+      )
+    ) {
+
+      await deleteExperience(
+        target.closest(
+          "[data-delete-experience]"
+        ).dataset
+          .deleteExperience
+      );
+
+    }
+
+    /* PROJECTS */
+
+    if (
+      target.closest(
+        "[data-edit-project]"
+      )
+    ) {
+
+      const id =
+        target.closest(
+          "[data-edit-project]"
+        ).dataset
+          .editProject;
+
+      const item =
+        state.projects.find(
+          x =>
+            Number(x.id) ===
+            Number(id)
+        );
+
+      const form =
+        document.querySelector(
+          "#project-form"
+        );
+
+      Object.entries(item)
+        .forEach(
+          ([k, v]) => {
+
+            if (
+              form.elements[k]
+            ) {
+
+              form.elements[
+                k
+              ].value =
+                v || "";
+
+            }
+
+          }
+        );
+
+    }
+
+    if (
+      target.closest(
+        "[data-delete-project]"
+      )
+    ) {
+
+      await deleteProject(
+        target.closest(
+          "[data-delete-project]"
+        ).dataset
+          .deleteProject
+      );
+
+    }
+
+    /* PHOTOS */
+
+    if (
+      target.closest(
+        "[data-edit-photo]"
+      )
+    ) {
+
+      const id =
+        target.closest(
+          "[data-edit-photo]"
+        ).dataset
+          .editPhoto;
+
+      const item =
+        state.photos.find(
+          x =>
+            Number(x.id) ===
+            Number(id)
+        );
+
+      const form =
+        document.querySelector(
+          "#photo-form"
+        );
+
+      Object.entries(item)
+        .forEach(
+          ([k, v]) => {
+
+            if (
+              form.elements[k]
+            ) {
+
+              form.elements[
+                k
+              ].value =
+                v || "";
+
+            }
+
+          }
+        );
+
+    }
+
+    if (
+      target.closest(
+        "[data-delete-photo]"
+      )
+    ) {
+
+      await deletePhoto(
+        target.closest(
+          "[data-delete-photo]"
+        ).dataset
+          .deletePhoto
+      );
+
+    }
+
+    /* SOCIAL */
+
+    if (
+      target.closest(
+        "[data-edit-social]"
+      )
+    ) {
+
+      const id =
+        target.closest(
+          "[data-edit-social]"
+        ).dataset
+          .editSocial;
+
+      const item =
+        state.social_links.find(
+          x =>
+            Number(x.id) ===
+            Number(id)
+        );
+
+      const form =
+        document.querySelector(
+          "#social-form"
+        );
+
+      Object.entries(item)
+        .forEach(
+          ([k, v]) => {
+
+            if (
+              form.elements[k]
+            ) {
+
+              form.elements[
+                k
+              ].value =
+                v || "";
+
+            }
+
+          }
+        );
+
+    }
+
+    if (
+      target.closest(
+        "[data-delete-social]"
+      )
+    ) {
+
+      await deleteSocialLink(
+        target.closest(
+          "[data-delete-social]"
+        ).dataset
+          .deleteSocial
+      );
+
+    }
+
   }
-});
+);
+
+
+const avatarInput =
+  document.querySelector(
+    '[name="avatar_file"]'
+  );
+
+avatarInput?.addEventListener(
+  "change",
+  event => {
+
+    const file =
+      event.target.files[0];
+
+    if (!file) return;
+
+    const preview =
+      document.querySelector(
+        "#avatar-preview"
+      );
+
+    preview.src =
+      URL.createObjectURL(
+        file
+      );
+
+    preview.style.display =
+      "block";
+
+  }
+);
+/* ==========================================
+   INICIO
+========================================== */
 
 loadState();
