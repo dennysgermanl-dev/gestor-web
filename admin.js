@@ -946,8 +946,6 @@ async function saveExperience(item) {
 
 if (item.id) {
 
-  payload.id = Number(item.id);
-
   const { error } =
     await supabaseClient
       .from("experience")
@@ -955,6 +953,8 @@ if (item.id) {
       .eq("id", item.id);
 
   if (error) throw error;
+
+}
 
 } else {
 
@@ -1069,8 +1069,6 @@ const payload = {
 
 if (item.id) {
 
-  payload.id = Number(item.id);
-
   const { error } =
     await supabaseClient
       .from("projects")
@@ -1078,6 +1076,8 @@ if (item.id) {
       .eq("id", item.id);
 
   if (error) throw error;
+
+}
 
 } else {
 
@@ -1304,8 +1304,6 @@ async function saveSocialLink(item) {
 
 if (item.id) {
 
-  payload.id = Number(item.id);
-
   const { error } =
     await supabaseClient
       .from("social_links")
@@ -1313,6 +1311,8 @@ if (item.id) {
       .eq("id", item.id);
 
   if (error) throw error;
+
+}
 
 } else {
 
