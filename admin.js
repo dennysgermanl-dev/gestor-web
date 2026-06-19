@@ -956,7 +956,7 @@ if (item.id) {
 
 }
 
-} else {
+else {
 
   const { error } =
     await supabaseClient
@@ -1079,7 +1079,7 @@ if (item.id) {
 
 }
 
-} else {
+else {
 
   const { error } =
     await supabaseClient
@@ -1314,7 +1314,7 @@ if (item.id) {
 
 }
 
-} else {
+else {
 
   const { error } =
     await supabaseClient
