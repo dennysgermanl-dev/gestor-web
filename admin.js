@@ -131,24 +131,40 @@ async function loadState() {
       .auth
       .getSession();
 
-  if (!sessionData.session) {
+if (!sessionData.session) {
 
-    document.querySelector(
-      "#storage-status"
-    ).textContent =
-      "Inicia sesión para administrar el contenido.";
+  console.log(
+    "Usuario NO autenticado"
+  );
 
-    document.querySelector(
-      "#admin-content"
-    ).hidden = true;
+  document.querySelector(
+    "#storage-status"
+  ).textContent =
+    "Inicia sesión para administrar el contenido.";
 
-    document.querySelector(
-      "#auth-panel"
-    ).hidden = false;
+  document.querySelector(
+    "#admin-content"
+  ).hidden = true;
 
-    return;
+  document.querySelector(
+    "#auth-panel"
+  ).hidden = false;
 
-  }
+  return;
+
+}
+
+console.log(
+  "Usuario autenticado"
+);
+
+document.querySelector(
+  "#admin-content"
+).hidden = false;
+
+document.querySelector(
+  "#auth-panel"
+).hidden = true;
 
   const [
 
@@ -1545,54 +1561,53 @@ document
 /* ==========================================
    LOGIN
 ========================================== */
-
-document
-  .querySelector(
+const loginForm =
+  document.querySelector(
     "#login-form"
-  )
-  ?.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-      const {
-        email,
-        password
-      } =
-        Object.fromEntries(
-          new FormData(
-            event.currentTarget
-          ).entries()
-        );
-
-      const { error } =
-        await supabaseClient
-
-          .auth
-
-          .signInWithPassword({
-            email,
-            password
-          });
-
-      if (error) {
-
-        alert(
-          error.message
-        );
-
-        return;
-
-      }
-
-      event.currentTarget.reset();
-
-      await loadState();
-
-    }
   );
 
+loginForm?.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    const form =
+      event.currentTarget;
+
+    const {
+      email,
+      password
+    } =
+      Object.fromEntries(
+        new FormData(form)
+          .entries()
+      );
+
+    const { error } =
+      await supabaseClient
+        .auth
+        .signInWithPassword({
+          email,
+          password
+        });
+
+    if (error) {
+
+      alert(error.message);
+
+      return;
+
+    }
+
+    if (form) {
+      form.reset();
+    }
+
+    await loadState();
+
+  }
+);
 /* ==========================================
    HIGHLIGHTS
 ========================================== */
