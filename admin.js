@@ -54,19 +54,31 @@ const nextId = items =>
 
 function setupClient() {
 
-  if (!hasSupabaseConfig())
-    return null;
+  if (supabaseClient) {
+    return supabaseClient;
+  }
 
-  return window.supabase.createClient(
-    window.SUPABASE_CONFIG.url,
-    window.SUPABASE_CONFIG.anonKey
-  );
+  if (!hasSupabaseConfig()) {
+    return null;
+  }
+
+  supabaseClient =
+    window.supabase.createClient(
+      window.SUPABASE_CONFIG.url,
+      window.SUPABASE_CONFIG.anonKey
+    );
+
+  return supabaseClient;
 
 }
-
 async function loadState() {
 
-  supabaseClient = setupClient();
+  if (!supabaseClient) {
+
+    supabaseClient =
+      setupClient();
+
+  }
 
   document.querySelector("#admin-content").hidden = false;
   document.querySelector("#auth-panel").hidden = true;
@@ -248,8 +260,10 @@ function fillProfileForm() {
       "#profile-form"
     );
 
+  if (!form) return;
+
   Object.entries(
-    state.profile
+    state.profile || {}
   ).forEach(([key, value]) => {
 
     if (form.elements[key]) {
