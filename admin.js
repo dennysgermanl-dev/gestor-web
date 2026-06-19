@@ -938,30 +938,36 @@ async function saveExperience(item) {
   }
 
   const payload = {
+  year: item.year,
+  title: item.title,
+  description: item.description,
+  sort_order: Number(item.sort_order || 0)
+};
 
-    ...item,
+if (item.id) {
 
-    sort_order:
-      Number(
-        item.sort_order || 0
-      )
-
-  };
-
-  if (!payload.id)
-    delete payload.id;
+  payload.id = Number(item.id);
 
   const { error } =
     await supabaseClient
-
       .from("experience")
+      .update(payload)
+      .eq("id", item.id);
 
-      .upsert(payload);
+  if (error) throw error;
 
-  if (error)
-    throw error;
+} else {
 
-  await loadState();
+  const { error } =
+    await supabaseClient
+      .from("experience")
+      .insert(payload);
+
+  if (error) throw error;
+
+}
+
+await loadState();
 
 }
 
@@ -1052,32 +1058,39 @@ async function saveProject(item) {
 
   }
 
-  const payload = {
+const payload = {
+  title: item.title,
+  description: item.description,
+  image_url: item.image_url,
+  project_url: item.project_url,
+  technologies: item.technologies,
+  sort_order: Number(item.sort_order || 0)
+};
 
-    ...item,
+if (item.id) {
 
-    sort_order:
-      Number(
-        item.sort_order || 0
-      )
-
-  };
-
-  if (!payload.id)
-    delete payload.id;
+  payload.id = Number(item.id);
 
   const { error } =
     await supabaseClient
-
       .from("projects")
+      .update(payload)
+      .eq("id", item.id);
 
-      .upsert(payload);
+  if (error) throw error;
 
-  if (error)
-    throw error;
+} else {
 
-  await loadState();
+  const { error } =
+    await supabaseClient
+      .from("projects")
+      .insert(payload);
 
+  if (error) throw error;
+
+}
+
+await loadState();
 }
 
 async function deleteProject(id) {
@@ -1283,30 +1296,36 @@ async function saveSocialLink(item) {
   }
 
   const payload = {
+  platform: item.platform,
+  url: item.url,
+  icon: item.icon,
+  sort_order: Number(item.sort_order || 0)
+};
 
-    ...item,
+if (item.id) {
 
-    sort_order:
-      Number(
-        item.sort_order || 0
-      )
-
-  };
-
-  if (!payload.id)
-    delete payload.id;
+  payload.id = Number(item.id);
 
   const { error } =
     await supabaseClient
-
       .from("social_links")
+      .update(payload)
+      .eq("id", item.id);
 
-      .upsert(payload);
+  if (error) throw error;
 
-  if (error)
-    throw error;
+} else {
 
-  await loadState();
+  const { error } =
+    await supabaseClient
+      .from("social_links")
+      .insert(payload);
+
+  if (error) throw error;
+
+}
+
+await loadState();
 
 }
 
