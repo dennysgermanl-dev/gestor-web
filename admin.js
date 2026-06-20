@@ -1727,35 +1727,36 @@ document
             )
           : "";
 
-      const item = {
+     const item = {
 
-        id:
-          data.get("id"),
+  id:
+    data.get("id"),
 
-        title:
-          data.get("title"),
+  title:
+    data.get("title"),
 
-        description:
-          data.get(
-            "description"
-          ),
+  description:
+    data.get(
+      "description"
+    ),
 
-        url:
-          data.get("url"),
+  project_url:
+    data.get(
+      "project_url"
+    ),
 
-        sort_order:
-          data.get(
-            "sort_order"
-          ),
+  sort_order:
+    data.get(
+      "sort_order"
+    ),
 
-        image_url:
-          uploadedUrl ||
-          data.get(
-            "image_url"
-          )
+  image_url:
+    uploadedUrl ||
+    data.get(
+      "image_url"
+    )
 
-      };
-
+};
       await saveProject(
         item
       );
